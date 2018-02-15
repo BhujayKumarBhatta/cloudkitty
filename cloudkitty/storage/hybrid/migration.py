@@ -15,24 +15,28 @@
 #
 # @author: Stéphane Albert
 #
-from cloudkitty import service
+import os
+
+from cloudkitty.common.db.alembic import migration
+
+ALEMBIC_REPO = os.path.join(os.path.dirname(__file__), 'alembic')
 
 
-def main():
-    service.prepare_service()
-
-    # NOTE(mc): This import is done here to ensure that the prepare_service()
-    # function is called before any cfg option. By importing the orchestrator
-    # file, the utils one is imported too, and then some cfg options are read
-    # before the prepare_service(), making cfg.CONF returning default values
-    # systematically.
-    from cloudkitty import orchestrator
-    processor = orchestrator.Orchestrator()
-    try:
-        processor.process()
-    except KeyboardInterrupt:
-        processor.terminate()
+def upgrade(revision):
+    config = migration.load_alembic_config(ALEMBIC_REPO)
+    return migration.upgrade(config, revision)
 
 
-if __name__ == '__main__':
-    main()
+def version():
+    config = migration.load_alembic_config(ALEMBIC_REPO)
+    return migration.version(config)
+
+
+def revision(message, autogenerate):
+    config = migration.load_alembic_config(ALEMBIC_REPO)
+    return migration.revision(config, message, autogenerate)
+
+
+def stamp(revision):
+    config = migration.load_alembic_config(ALEMBIC_REPO)
+    return migration.stamp(config, revision)
