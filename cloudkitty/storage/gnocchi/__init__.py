@@ -37,6 +37,7 @@ CONF = cfg.CONF
 METRICS_CONF = ck_utils.get_metrics_conf(CONF.collect.metrics_conf)
 
 GNOCCHI_STORAGE_OPTS = 'storage_gnocchi'
+end_point_type_opts = [cfg.StrOpt('interface', default='internalURL', help='endpoint url type'),]
 gnocchi_storage_opts = [
     cfg.StrOpt('archive_policy_name',
                default='rating',
@@ -50,6 +51,7 @@ gnocchi_storage_opts = [
                        '{"granularity": 2592000, "timespan": "1800 days"}]',
                help='Gnocchi storage archive policy definition.'), ]
 CONF.register_opts(gnocchi_storage_opts, GNOCCHI_STORAGE_OPTS)
+CONF.register_opts(end_point_type_opts, 'ks_auth')
 
 ks_loading.register_session_conf_options(
     CONF,
@@ -78,7 +80,7 @@ class GnocchiStorage(storage.BaseStorage):
             CONF,
             GNOCCHI_STORAGE_OPTS,
             auth=self.auth)
-        self._conn = gclient.Client('1', session=self.session)
+        self._conn = gclient.Client('1', session=self.session,interface=CONF.ks_auth.interface)
         self._measures = {}
         self._archive_policy_name = (
             CONF.storage_gnocchi.archive_policy_name)

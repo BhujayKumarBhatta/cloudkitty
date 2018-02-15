@@ -29,8 +29,11 @@ LOG = logging.getLogger(__name__)
 
 GNOCCHI_COLLECTOR_OPTS = 'gnocchi_collector'
 gnocchi_collector_opts = ks_loading.get_auth_common_conf_options()
+end_point_type_opts = [cfg.StrOpt('interface', default='internalURL', help='endpoint url type'),]
+
 
 cfg.CONF.register_opts(gnocchi_collector_opts, GNOCCHI_COLLECTOR_OPTS)
+cfg.CONF.register_opts(end_point_type_opts, 'ks_auth')
 ks_loading.register_session_conf_options(
     cfg.CONF,
     GNOCCHI_COLLECTOR_OPTS)
@@ -103,7 +106,8 @@ class GnocchiCollector(collector.BaseCollector):
             auth=self.auth)
         self._conn = gclient.Client(
             '1',
-            session=self.session)
+            session=self.session,
+            interface=CONF.ks_auth.interface)
 
     @classmethod
     def get_metadata(cls, resource_name, transformers):
